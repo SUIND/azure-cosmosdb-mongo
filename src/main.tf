@@ -11,7 +11,7 @@ locals {
     "australiaeast"      = "southeastasia"
     "brazilsouth"        = "southcentralus"
     "canadacentral"      = "westus2"
-    "centralindia"       = "southafrianorth"
+    "centralindia"       = "southafricanorth"
     "eastasia"           = "japaneast"
     "francecentral"      = "westeurope"
     "germanywestcentral" = "northeurope"
@@ -33,17 +33,19 @@ resource "azurerm_resource_group" "main" {
 }
 
 resource "azurerm_cosmosdb_account" "main" {
-  name                                  = var.md_metadata.name_prefix
-  location                              = azurerm_resource_group.main.location
-  resource_group_name                   = azurerm_resource_group.main.name
-  offer_type                            = "Standard"
-  kind                                  = "MongoDB"
-  enable_automatic_failover             = var.geo_redundancy.automatic_failover
-  enable_multiple_write_locations       = var.geo_redundancy.multi_region_writes
-  mongo_server_version                  = var.database.mongo_server_version
-  public_network_access_enabled         = false
+  name                            = var.md_metadata.name_prefix
+  location                        = azurerm_resource_group.main.location
+  resource_group_name             = azurerm_resource_group.main.name
+  offer_type                      = "Standard"
+  kind                            = "MongoDB"
+  enable_automatic_failover       = var.geo_redundancy.automatic_failover
+  enable_multiple_write_locations = var.geo_redundancy.multi_region_writes
+  mongo_server_version            = var.database.mongo_server_version
+  # If the network firewall is set to Selected Networks instead of Disabled, it's still set to Disabled on their end but is allowing a single VNet through
+  # With public_network_access_enable = true, plus virtual_network_filter_enabled = true, the CosmosDB account will be accessible from the VNet and not the internet.
+  public_network_access_enabled         = true
   is_virtual_network_filter_enabled     = true
-  access_key_metadata_writes_enabled    = false
+  access_key_metadata_writes_enabled    = true
   network_acl_bypass_for_azure_services = true
   tags                                  = var.md_metadata.default_tags
 
